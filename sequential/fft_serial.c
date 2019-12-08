@@ -12,7 +12,7 @@ void cffti ( int n, double w[] );
 double cpu_time ( void );
 double ggl ( double *ds );
 void step ( int n, int mj, double a[], double b[], double c[], double d[], 
-  double w[], double sgn );
+double w[], double sgn );
 void timestamp ( );
 
 int main ( )
@@ -47,9 +47,9 @@ int main ( )
   printf ( "\n" );
   printf ( "  Demonstrate an implementation of the Fast Fourier Transform\n" );
   printf ( "  of a complex data vector.\n" );
-/*
-  Prepare for tests.
-*/
+    /*
+    Prepare for tests.
+    */
   printf ( "\n" );
   printf ( "  Accuracy check:\n" );
   printf ( "\n" );
@@ -60,19 +60,18 @@ int main ( )
 
   seed  = 331.0;
   n = 1;
-/*
-  LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
-*/
-  for ( ln2 = 1; ln2 <= 20; ln2++ )
+    /*
+    LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
+    */
+  for ( ln2 = 1; ln2 <= 30; ln2++ )
   {
     n = 2 * n;
-/*
-  Allocate storage for the complex arrays W, X, Y, Z.  
-
-  We handle the complex arithmetic,
-  and store a complex number as a pair of doubles, a complex vector as a doubly
-  dimensioned array whose second dimension is 2. 
-*/
+    /*
+    Allocate storage for the complex arrays W, X, Y, Z.  
+    We handle the complex arithmetic,
+    and store a complex number as a pair of doubles, a complex vector as a doubly
+    dimensioned array whose second dimension is 2. 
+    */
     w = ( double * ) malloc (     n * sizeof ( double ) );
     x = ( double * ) malloc ( 2 * n * sizeof ( double ) );
     y = ( double * ) malloc ( 2 * n * sizeof ( double ) );
@@ -106,22 +105,22 @@ int main ( )
           z[i+1] = z1;         /* copy of initial imag. data */
         }
       }
-/* 
-  Initialize the sine and cosine tables.
-*/
+    /* 
+    Initialize the sine and cosine tables.
+    */
       cffti ( n, w );
-/* 
-  Transform forward, back 
-*/
+        /* 
+        Transform forward, back 
+        */
       if ( first )
       {
         sgn = + 1.0;
         cfft2 ( n, x, y, w, sgn );
         sgn = - 1.0;
         cfft2 ( n, y, x, w, sgn );
-/* 
-  Results should be same as the initial data multiplied by N.
-*/
+        /* 
+        Results should be same as the initial data multiplied by N.
+        */
         fnm1 = 1.0 / ( double ) n;
         error = 0.0;
         for ( i = 0; i < 2 * n; i = i + 2 )
@@ -175,29 +174,22 @@ int main ( )
 
   return 0;
 }
-/******************************************************************************/
 
 void ccopy ( int n, double x[], double y[] )
-
 /******************************************************************************/
 /* 
   CCOPY copies a complex vector.
   Discussion:
-
     The "complex" vector A[N] is actually stored as a double vector B[2*N].
-
     The "complex" vector entry A[I] is stored as:
 
       B[I*2+0], the real part,
       B[I*2+1], the imaginary part.
 
   Parameters:
-
-    Input, int N, the length of the vector.
-
-    Input, double X[2*N], the vector to be copied.
-
-    Output, double Y[2*N], a copy of X.
+    - Input, int N, the length of the vector.
+    - Input, double X[2*N], the vector to be copied.
+    - Output, double Y[2*N], a copy of X.
 */
 {
   int i;
@@ -217,17 +209,12 @@ void cfft2 ( int n, double x[], double y[], double w[], double sgn )
 /*
   CFFT2 performs a complex Fast Fourier Transform.
   Parameters:
-
-    Input, int N, the size of the array to be transformed.
-
-    Input/output, double X[2*N], the data to be transformed.  
-    On output, the contents of X have been overwritten by work information.
-
-    Output, double Y[2*N], the forward or backward FFT of X.
-
-    Input, double W[N], a table of sines and cosines.
-
-    Input, double SGN, is +1 for a "forward" FFT and -1 for a "backward" FFT.
+    - Input, int N, the size of the array to be transformed.
+    - Input/output, double X[2*N], the data to be transformed.  
+    - On output, the contents of X have been overwritten by work information.
+    - Output, double Y[2*N], the forward or backward FFT of X.
+    - Input, double W[N], a table of sines and cosines.
+    - Input, double SGN, is +1 for a "forward" FFT and -1 for a "backward" FFT.
 */
 {
   int j;
@@ -237,9 +224,9 @@ void cfft2 ( int n, double x[], double y[], double w[], double sgn )
 
    m = ( int ) ( log ( ( double ) n ) / log ( 1.99 ) );
    mj   = 1;
-/*
-  Toggling switch for work array.
-*/
+    /*
+    Toggling switch for work array.
+    */
   tgle = 1;
   step ( n, mj, &x[0*2+0], &x[(n/2)*2+0], &y[0*2+0], &y[mj*2+0], w, sgn );
 
@@ -281,13 +268,9 @@ void cffti ( int n, double w[] )
 
 /******************************************************************************/
 /*
-  Purpose:
-
-    CFFTI sets up sine and cosine tables needed for the FFT calculation.
-
   Parameters:
-    Input, int N, the size of the array to be transformed.
-    Output, double W[N], a table of sines and cosines.
+    - Input, int N, the size of the array to be transformed.
+    - Output, double W[N], a table of sines and cosines.
 */
 {
   double arg;
@@ -354,27 +337,7 @@ void step ( int n, int mj, double a[], double b[], double c[],
 
 /******************************************************************************/
 /*
-  Purpose:
-
-    STEP carries out one step of the workspace version of CFFT2.
-
-  Modified:
-
-    23 March 2009
-
-  Author:
-
-    Original C version by Wesley Petersen.
-    This C version by John Burkardt.
-
-  Reference:
-
-    Wesley Petersen, Peter Arbenz, 
-    Introduction to Parallel Computing - A practical guide with examples in C,
-    Oxford University Press,
-    ISBN: 0-19-851576-6,
-    LC: QA76.58.P47.
-
+  STEP carries out one step of the workspace version of CFFT2.
   Parameters:
 */
 {
@@ -430,29 +393,8 @@ void timestamp ( )
 
 /******************************************************************************/
 /*
-  Purpose:
-
-    TIMESTAMP prints the current YMDHMS date as a time stamp.
-
-  Example:
-
-    31 May 2001 09:45:54 AM
-
-  Licensing:
-
-    This code is distributed under the GNU LGPL license. 
-
-  Modified:
-
-    24 September 2003
-
-  Author:
-
-    John Burkardt
-
+  TIMESTAMP prints the current YMDHMS date as a time stamp.
   Parameters:
-
-    None
 */
 {
 # define TIME_SIZE 40
