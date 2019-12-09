@@ -132,11 +132,8 @@ int main ( )
       } 
       else
       {
-# pragma omp parallel \
-    shared ( n, x, z ) \
-    private ( i, z0, z1 )
-
-# pragma omp for nowait
+#pragma omp parallel shared ( n, x, z ) private ( i, z0, z1 )
+#pragma omp for nowait
 
         for ( i = 0; i < 2 * n; i = i + 2 )
         {
@@ -403,11 +400,8 @@ void cffti ( int n, double w[] )
   n2 = n / 2;
   aw = 2.0 * pi / ( ( double ) n );
 
-# pragma omp parallel \
-    shared ( aw, n, w ) \
-    private ( arg, i )
-
-# pragma omp for nowait
+#pragma omp parallel shared ( aw, n, w ) private ( arg, i )
+#pragma omp for nowait
 
   for ( i = 0; i < n2; i++ )
   {
@@ -510,11 +504,8 @@ void step ( int n, int mj, double a[], double b[], double c[],
   mj2 = 2 * mj;
   lj  = n / mj2;
 
-# pragma omp parallel \
-    shared ( a, b, c, d, lj, mj, mj2, sgn, w ) \
-    private ( ambr, ambu, j, ja, jb, jc, jd, jw, k, wjw )
-
-# pragma omp for nowait
+#pragma omp parallel shared ( a, b, c, d, lj, mj, mj2, sgn, w ) private ( ambr, ambu, j, ja, jb, jc, jd, jw, k, wjw )
+#pragma omp for nowait
 
   for ( j = 0; j < lj; j++ )
   {
