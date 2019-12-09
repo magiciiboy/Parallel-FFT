@@ -55,7 +55,7 @@ int main ( )
   printf ( "\n" );
   printf ( "    FFT ( FFT ( X(1:N) ) ) == N * X(1:N)\n" );
   printf ( "\n" );
-  printf ( "             N      NITS    Error         Time          Time/Call     MFLOPS\n" );
+  printf ( "             N      NITS    Error         FLOPS               Time          Time/Call     MFLOPS\n" );
   printf ( "\n" );
 
   seed  = 331.0;
@@ -150,7 +150,7 @@ int main ( )
 
         mflops = flops / 1.0E+06 / ctime;
 
-        printf ( "  %12e  %12e  %12f\n", ctime, ctime / ( double ) ( 2 * nits ), mflops );
+        printf ( "  %20d  %12e  %12e  %12f\n", flops, ctime, ctime / ( double ) ( 2 * nits ), mflops );
       }
     }
     if ( ( ln2 % 4 ) == 0 ) 
