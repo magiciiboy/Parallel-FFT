@@ -63,7 +63,7 @@ int main ( )
     /*
     LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
     */
-  for ( ln2 = 10; ln2 <= 25; ln2++ )
+  for ( ln2 = 1; ln2 <= 25; ln2++ )
   {
     n = 2 * n;
     /*
