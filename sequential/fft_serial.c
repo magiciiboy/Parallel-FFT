@@ -1,9 +1,9 @@
-# include <stdlib.h>
-# include <stdio.h>
-# include <math.h>
-# include <time.h>
-# include <float.h>
-# include <omp.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+#include <float.h>
+#include <omp.h>
 
 int main ( );
 void ccopy ( int n, double x[], double y[] );

@@ -1,11 +1,8 @@
-# include <cstdlib>
-# include <iostream>
-# include <iomanip>
-# include <cmath>
-# include <ctime>
-# include <omp.h>
-
-using namespace std;
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+#include <omp.h>
 
 int main ( );
 void ccopy ( int n, double x[], double y[] );
@@ -16,38 +13,42 @@ void step ( int n, int mj, double a[], double b[], double c[], double d[],
   double w[], double sgn );
 void timestamp ( );
 
-//****************************************************************************80
+/******************************************************************************/
 
-int main ( void )
+int main ( )
 
-//****************************************************************************80
-//
-//  Purpose:
-//
-//    MAIN is the main program for FFT_OPENMP.
-//
-//  Discussion:
-//
-//    The complex data in an N vector is stored as pairs of values in a
-//    real vector of length 2*N.
-//
-//  Modified:
-//
-//    17 April 2009
-//
-//  Author:
-//
-//    Original C version by Wesley Petersen.
-//    C++ version by John Burkardt.
-//
-//  Reference:
-//
-//    Wesley Petersen, Peter Arbenz, 
-//    Introduction to Parallel Computing - A practical guide with examples in C,
-//    Oxford University Press,
-//    ISBN: 0-19-851576-6,
-//    LC: QA76.58.P47.
-//
+/******************************************************************************/
+/* 
+  Purpose:
+
+    MAIN is the main program for FFT_OPENMP.
+
+  Discussion:
+
+    The "complex" vector A is actually stored as a double vector B.
+
+    The "complex" vector entry A[I] is stored as:
+
+      B[I*2+0], the real part,
+      B[I*2+1], the imaginary part.
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
+*/
 {
   double error;
   int first;
@@ -57,10 +58,10 @@ int main ( void )
   int icase;
   int it;
   int ln2;
-  int ln2_max = 25;
+  int ln2_max = 20;
   double mflops;
   int n;
-  int nits = 10000;
+  int nits = 1000;
   static double seed;
   double sgn;
   double *w;
@@ -72,53 +73,51 @@ int main ( void )
   double z1;
 
   timestamp ( );
-  cout << "\n";
-  cout << "FFT_OPENMP\n";
-  cout << "  C++/OpenMP version\n";
-  cout << "\n";
-  cout << "  Demonstrate an implementation of the Fast Fourier Transform\n";
-  cout << "  of a complex data vector, using OpenMP for parallel execution.\n";
+  printf ( "\n" );
+  printf ( "FFT_OPENMP\n" );
+  printf ( "  C/OpenMP version\n" );
+  printf ( "\n" );
+  printf ( "  Demonstrate an implementation of the Fast Fourier Transform\n" );
+  printf ( "  of a complex data vector, using OpenMP for parallel execution.\n" );
 
-  cout << "\n";
-  cout << "  Number of processors available = " << omp_get_num_procs ( ) << "\n";
-  cout << "  Number of threads =              " << omp_get_max_threads ( ) << "\n";
-
-//
-//  Prepare for tests.
-//
-  cout << "\n";
-  cout << "  Accuracy check:\n";
-  cout << "\n";
-  cout << "    FFT ( FFT ( X(1:N) ) ) == N * X(1:N)\n";
-  cout << "\n";
-  cout << "             N      NITS    Error         Time          Time/Call     MFLOPS\n";
-  cout << "\n";
+  printf ( "\n" );
+  printf ( "  Number of processors available = %d\n", omp_get_num_procs ( ) );
+  printf ( "  Number of threads =              %d\n", omp_get_max_threads ( ) );
+/*
+  Prepare for tests.
+*/
+  printf ( "\n" );
+  printf ( "  Accuracy check:\n" );
+  printf ( "\n" );
+  printf ( "    FFT ( FFT ( X(1:N) ) ) == N * X(1:N)\n" );
+  printf ( "\n" );
+  printf ( "             N      NITS    Error         Time          Time/Call     MFLOPS\n" );
+  printf ( "\n" );
 
   seed  = 331.0;
   n = 1;
-//
-//  LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
-//
+/*
+  LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
+*/
   for ( ln2 = 1; ln2 <= ln2_max; ln2++ )
   {
     n = 2 * n;
-//
-//  Allocate storage for the complex arrays W, X, Y, Z.  
-//
-//  We handle the complex arithmetic,
-//  and store a complex number as a pair of doubles, a complex vector as a doubly
-//  dimensioned array whose second dimension is 2. 
-//
-    w = new double[  n];
-    x = new double[2*n];
-    y = new double[2*n];
-    z = new double[2*n];
+/*
+  Allocate storage for the complex arrays W, X, Y, Z.  
+
+  We handle the complex arithmetic,
+  and store a complex number as a pair of doubles, a complex vector as a doubly
+  dimensioned array whose second dimension is 2. 
+*/
+    w = ( double * ) malloc (     n * sizeof ( double ) );
+    x = ( double * ) malloc ( 2 * n * sizeof ( double ) );
+    y = ( double * ) malloc ( 2 * n * sizeof ( double ) );
+    z = ( double * ) malloc ( 2 * n * sizeof ( double ) );
 
     first = 1;
 
     for ( icase = 0; icase < 2; icase++ )
     {
-
       if ( first )
       {
         for ( i = 0; i < 2 * n; i = i + 2 )
@@ -138,32 +137,33 @@ int main ( void )
     private ( i, z0, z1 )
 
 # pragma omp for nowait
+
         for ( i = 0; i < 2 * n; i = i + 2 )
         {
-          z0 = 0.0;
-          z1 = 0.0;
+          z0 = 0.0;              /* real part of array */
+          z1 = 0.0;              /* imaginary part of array */
           x[i] = z0;
-          z[i] = z0;
+          z[i] = z0;           /* copy of initial real data */
           x[i+1] = z1;
-          z[i+1] = z1;
+          z[i+1] = z1;         /* copy of initial imag. data */
         }
       }
-//
-//  Initialize the sine and cosine tables.
-//
+/* 
+  Initialize the sine and cosine tables.
+*/
       cffti ( n, w );
-//
-//  Transform forward, back 
-//
+/* 
+  Transform forward, back 
+*/
       if ( first )
       {
         sgn = + 1.0;
         cfft2 ( n, x, y, w, sgn );
         sgn = - 1.0;
         cfft2 ( n, y, x, w, sgn );
-// 
-//  Results should be same as initial multiplied by N.
-//
+/* 
+  Results should be same as the initial data multiplied by N.
+*/
         fnm1 = 1.0 / ( double ) n;
         error = 0.0;
         for ( i = 0; i < 2 * n; i = i + 2 )
@@ -173,9 +173,7 @@ int main ( void )
           + pow ( z[i+1] - fnm1 * x[i+1], 2 );
         }
         error = sqrt ( fnm1 * error );
-        cout << "  " << setw(12) << n
-             << "  " << setw(8) << nits
-             << "  " << setw(12) << error;
+        printf ( "  %12d  %8d  %12e", n, nits, error );
         first = 0;
       }
       else
@@ -190,14 +188,12 @@ int main ( void )
         }
         wtime = omp_get_wtime ( ) - wtime;
 
-        flops = ( double ) 2 * ( double ) nits 
-          * ( ( double ) 5 * ( double ) n * ( double ) ln2 );
+        flops = 2.0 * ( double ) nits 
+          * ( 5.0 * ( double ) n * ( double ) ln2 );
 
         mflops = flops / 1.0E+06 / wtime;
 
-        cout << "  " << setw(12) << ctime
-             << "  " << setw(12) << wtime / ( double ) ( 2 * nits )
-             << "  " << setw(12) << mflops << "\n";
+        printf ( "  %12e  %12e  %12f\n", wtime, wtime / ( double ) ( 2 * nits ), mflops );
       }
     }
     if ( ( ln2 % 4 ) == 0 ) 
@@ -208,66 +204,66 @@ int main ( void )
     {
       nits = 1;
     }
-    delete [] w;
-    delete [] x;
-    delete [] y;
-    delete [] z;
+    free ( w );
+    free ( x );
+    free ( y );
+    free ( z );
   }
-//
-//  Terminate.
-//
-  cout << "\n";
-  cout << "FFT_OPENMP:\n";
-  cout << "  Normal end of execution.\n";
-  cout << "\n";
+/*
+  Terminate.
+*/
+  printf ( "\n" );
+  printf ( "FFT_OPENMP:\n" );
+  printf ( "  Normal end of execution.\n" );
+  printf ( "\n" );
   timestamp ( );
 
   return 0;
 }
-//****************************************************************************80
+/******************************************************************************/
 
 void ccopy ( int n, double x[], double y[] )
 
-//****************************************************************************80
-//
-//  Purpose:
-//
-//    CCOPY copies a complex vector.
-//
-//  Discussion:
-//
-//    The "complex" vector A[N] is actually stored as a double vector B[2*N].
-//
-//    The "complex" vector entry A[I] is stored as:
-//
-//      B[I*2+0], the real part,
-//      B[I*2+1], the imaginary part.
-//
-//  Modified:
-//
-//    20 March 2009
-//
-//  Author:
-//
-//    Original C version by Wesley Petersen.
-//    C++ version by John Burkardt.
-//
-//  Reference:
-//
-//    Wesley Petersen, Peter Arbenz, 
-//    Introduction to Parallel Computing - A practical guide with examples in C,
-//    Oxford University Press,
-//    ISBN: 0-19-851576-6,
-//    LC: QA76.58.P47.
-//
-//  Parameters:
-//
-//    Input, int N, the length of the "complex" array.
-//
-//    Input, double X[2*N], the array to be copied.
-//
-//    Output, double Y[2*N], a copy of X.
-//
+/******************************************************************************/
+/*
+  Purpose:
+
+    CCOPY copies a complex vector.
+
+  Discussion:
+
+    The "complex" vector A[N] is actually stored as a double vector B[2*N].
+
+    The "complex" vector entry A[I] is stored as:
+
+      B[I*2+0], the real part,
+      B[I*2+1], the imaginary part.
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
+
+  Parameters:
+
+    Input, int N, the length of the vector.
+
+    Input, double X[2*N], the vector to be copied.
+
+    Output, double Y[2*N], a copy of X.
+*/
 {
   int i;
 
@@ -278,46 +274,46 @@ void ccopy ( int n, double x[], double y[] )
    }
   return;
 }
-//****************************************************************************80
+/******************************************************************************/
 
 void cfft2 ( int n, double x[], double y[], double w[], double sgn )
 
-//****************************************************************************80
-//
-//  Purpose:
-//
-//    CFFT2 performs a complex Fast Fourier Transform.
-//
-//  Modified:
-//
-//    20 March 2009
-//
-//  Author:
-//
-//    Original C version by Wesley Petersen.
-//    C++ version by John Burkardt.
-//
-//  Reference:
-//
-//    Wesley Petersen, Peter Arbenz, 
-//    Introduction to Parallel Computing - A practical guide with examples in C,
-//    Oxford University Press,
-//    ISBN: 0-19-851576-6,
-//    LC: QA76.58.P47.
-//
-//  Parameters:
-//
-//    Input, int N, the size of the array to be transformed.
-//
-//    Input/output, double X[2*N], the data to be transformed.  
-//    On output, the contents of X have been overwritten by work information.
-//
-//    Output, double Y[2*N], the forward or backward FFT of X.
-//
-//    Input, double W[N], a table of sines and cosines.
-//
-//    Input, double SGN, is +1 for a "forward" FFT and -1 for a "backward" FFT.
-//
+/******************************************************************************/
+/*
+  Purpose:
+
+    CFFT2 performs a complex Fast Fourier Transform.
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
+
+  Parameters:
+
+    Input, int N, the size of the array to be transformed.
+
+    Input/output, double X[2*N], the data to be transformed.  
+    On output, the contents of X have been overwritten by work information.
+
+    Output, double Y[2*N], the forward or backward FFT of X.
+
+    Input, double W[N], a table of sines and cosines.
+
+    Input, double SGN, is +1 for a "forward" FFT and -1 for a "backward" FFT.
+*/
 {
   int j;
   int m;
@@ -326,9 +322,9 @@ void cfft2 ( int n, double x[], double y[], double w[], double sgn )
 
    m = ( int ) ( log ( ( double ) n ) / log ( 1.99 ) );
    mj   = 1;
-//
-//  Toggling switch for work array.
-//
+/*
+  Toggling switch for work array.
+*/
   tgle = 1;
   step ( n, mj, &x[0*2+0], &x[(n/2)*2+0], &y[0*2+0], &y[mj*2+0], w, sgn );
 
@@ -351,9 +347,9 @@ void cfft2 ( int n, double x[], double y[], double w[], double sgn )
       tgle = 1;
     }
   }
-//
-//  Last pass thru data: move y to x if needed 
-//
+/* 
+  Last pass through data: move Y to X if needed.
+*/
   if ( tgle ) 
   {
     ccopy ( n, y, x );
@@ -364,39 +360,39 @@ void cfft2 ( int n, double x[], double y[], double w[], double sgn )
 
   return;
 }
-//****************************************************************************80
+/******************************************************************************/
 
 void cffti ( int n, double w[] )
 
-//****************************************************************************80
-//
-//  Purpose:
-//
-//    CFFTI sets up sine and cosine tables needed for the FFT calculation.
-//
-//  Modified:
-//
-//    20 March 2009
-//
-//  Author:
-//
-//    Original C version by Wesley Petersen.
-//    C++ version by John Burkardt.
-//
-//  Reference:
-//
-//    Wesley Petersen, Peter Arbenz, 
-//    Introduction to Parallel Computing - A practical guide with examples in C,
-//    Oxford University Press,
-//    ISBN: 0-19-851576-6,
-//    LC: QA76.58.P47.
-//
-//  Parameters:
-//
-//    Input, int N, the size of the array to be transformed.
-//
-//    Output, double W[N], a table of sines and cosines.
-//
+/******************************************************************************/
+/*
+  Purpose:
+
+    CFFTI sets up sine and cosine tables needed for the FFT calculation.
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
+
+  Parameters:
+
+    Input, int N, the size of the array to be transformed.
+
+    Output, double W[N], a table of sines and cosines.
+*/
 {
   double arg;
   double aw;
@@ -421,39 +417,39 @@ void cffti ( int n, double w[] )
   }
   return;
 }
-//****************************************************************************80
+/******************************************************************************/
 
 double ggl ( double *seed )
 
-//****************************************************************************80
-//
-//  Purpose:
-//
-//    GGL generates uniformly distributed pseudorandom numbers. 
-//
-//  Modified:
-//
-//    20 March 2009
-//
-//  Author:
-//
-//    Original C version by Wesley Petersen, M Troyer, I Vattulainen.
-//    C++ version by John Burkardt.
-//
-//  Reference:
-//
-//    Wesley Petersen, Peter Arbenz, 
-//    Introduction to Parallel Computing - A practical guide with examples in C,
-//    Oxford University Press,
-//    ISBN: 0-19-851576-6,
-//    LC: QA76.58.P47.
-//
-//  Parameters:
-//
-//    Input/output, double *SEED, used as a seed for the sequence.
-//
-//    Output, double GGL, the next pseudorandom value.
-//
+/******************************************************************************/
+/* 
+  Purpose:
+
+    GGL generates uniformly distributed pseudorandom real numbers in [0,1]. 
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen, M Troyer, I Vattulainen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
+
+  Parameters:
+
+    Input/output, double *SEED, used as a seed for the sequence.
+
+    Output, double GGL, the next pseudorandom value.
+*/
 {
   double d2 = 0.2147483647e10;
   double t;
@@ -466,34 +462,37 @@ double ggl ( double *seed )
 
   return value;
 }
-//****************************************************************************80
+/******************************************************************************/
 
 void step ( int n, int mj, double a[], double b[], double c[],
   double d[], double w[], double sgn )
 
-//****************************************************************************80
-//
-//  Purpose:
-//
-//    STEP carries out one step of the workspace version of CFFT2.
-//
-//  Modified:
-//
-//    20 March 2009
-//
-//  Author:
-//
-//    Original C version by Wesley Petersen.
-//    C++ version by John Burkardt.
-//
-//  Reference:
-//
-//    Wesley Petersen, Peter Arbenz, 
-//    Introduction to Parallel Computing - A practical guide with examples in C,
-//    Oxford University Press,
-//    ISBN: 0-19-851576-6,
-//    LC: QA76.58.P47.
-//
+/******************************************************************************/
+/*
+  Purpose:
+
+    STEP carries out one step of the workspace version of CFFT2.
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
+
+  Parameters:
+
+*/
 {
   double ambr;
   double ambu;
@@ -509,7 +508,7 @@ void step ( int n, int mj, double a[], double b[], double c[],
   double wjw[2];
 
   mj2 = 2 * mj;
-  lj = n / mj2;
+  lj  = n / mj2;
 
 # pragma omp parallel \
     shared ( a, b, c, d, lj, mj, mj2, sgn, w ) \
@@ -547,50 +546,49 @@ void step ( int n, int mj, double a[], double b[], double c[],
   }
   return;
 }
-//****************************************************************************80
+/******************************************************************************/
 
-void timestamp ( )
+void timestamp ( void )
 
-//****************************************************************************80
-//
-//  Purpose:
-//
-//    TIMESTAMP prints the current YMDHMS date as a time stamp.
-//
-//  Example:
-//
-//    31 May 2001 09:45:54 AM
-//
-//  Licensing:
-//
-//    This code is distributed under the GNU LGPL license. 
-//
-//  Modified:
-//
-//    24 September 2003
-//
-//  Author:
-//
-//    John Burkardt
-//
-//  Parameters:
-//
-//    None
-//
+/******************************************************************************/
+/*
+  Purpose:
+
+    TIMESTAMP prints the current YMDHMS date as a time stamp.
+
+  Example:
+
+    31 May 2001 09:45:54 AM
+
+  Licensing:
+
+    This code is distributed under the GNU LGPL license. 
+
+  Modified:
+
+    24 September 2003
+
+  Author:
+
+    John Burkardt
+
+  Parameters:
+
+    None
+*/
 {
 # define TIME_SIZE 40
 
   static char time_buffer[TIME_SIZE];
   const struct tm *tm;
-  size_t len;
   time_t now;
 
   now = time ( NULL );
   tm = localtime ( &now );
 
-  len = strftime ( time_buffer, TIME_SIZE, "%d %B %Y %I:%M:%S %p", tm );
+  strftime ( time_buffer, TIME_SIZE, "%d %B %Y %I:%M:%S %p", tm );
 
-  cout << time_buffer << "\n";
+  printf ( "%s\n", time_buffer );
 
   return;
 # undef TIME_SIZE
