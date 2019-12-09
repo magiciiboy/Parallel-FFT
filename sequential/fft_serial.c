@@ -150,7 +150,7 @@ int main ( )
 
         mflops = flops / 1.0E+06 / ctime;
 
-        printf ( "  %20d  %12e  %12e  %12f\n", int(flops), ctime, ctime / ( double ) ( 2 * nits ), mflops );
+        printf ( "  %20d  %12e  %12e  %12f\n", long(flops), ctime, ctime / ( double ) ( 2 * nits ), mflops );
       }
     }
     if ( ( ln2 % 4 ) == 0 ) 
