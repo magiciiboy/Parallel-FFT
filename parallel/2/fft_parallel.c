@@ -4,6 +4,8 @@
 # include <time.h>
 # include <omp.h>
 
+# define TIME_SIZE 40
+
 int main ( );
 void ccopy ( int n, double x[], double y[] );
 void cfft2 ( int n, double x[], double y[], double w[], double sgn );
