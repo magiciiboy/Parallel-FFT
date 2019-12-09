@@ -15,11 +15,41 @@ void timestamp ( );
 
 /******************************************************************************/
 
-int main () {
-  /******************************************************************************/
-  /*
-    Main program for FFT_OPENMP.
-  */
+int main ( )
+
+/******************************************************************************/
+/* 
+  Purpose:
+
+    MAIN is the main program for FFT_OPENMP.
+
+  Discussion:
+
+    The "complex" vector A is actually stored as a double vector B.
+
+    The "complex" vector entry A[I] is stored as:
+
+      B[I*2+0], the real part,
+      B[I*2+1], the imaginary part.
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
+*/
+{
   double error;
   int first;
   double flops;
@@ -53,9 +83,9 @@ int main () {
   printf ( "\n" );
   printf ( "  Number of processors available = %d\n", omp_get_num_procs ( ) );
   printf ( "  Number of threads =              %d\n", omp_get_max_threads ( ) );
-  /*
-    Prepare for tests.
-  */
+/*
+  Prepare for tests.
+*/
   printf ( "\n" );
   printf ( "  Accuracy check:\n" );
   printf ( "\n" );
@@ -66,19 +96,19 @@ int main () {
 
   seed  = 331.0;
   n = 1;
-  /*
-    LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
-  */
+/*
+  LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
+*/
   for ( ln2 = 1; ln2 <= ln2_max; ln2++ )
   {
     n = 2 * n;
-    /*
-    Allocate storage for the complex arrays W, X, Y, Z.  
+/*
+  Allocate storage for the complex arrays W, X, Y, Z.  
 
-    We handle the complex arithmetic,
-    and store a complex number as a pair of doubles, a complex vector as a doubly
-    dimensioned array whose second dimension is 2. 
-    */
+  We handle the complex arithmetic,
+  and store a complex number as a pair of doubles, a complex vector as a doubly
+  dimensioned array whose second dimension is 2. 
+*/
     w = ( double * ) malloc (     n * sizeof ( double ) );
     x = ( double * ) malloc ( 2 * n * sizeof ( double ) );
     y = ( double * ) malloc ( 2 * n * sizeof ( double ) );
@@ -102,60 +132,69 @@ int main () {
       } 
       else
       {
-        # pragma omp parallel shared ( n, x, z ) private ( i, z0, z1 )
-        # pragma omp for nowait
+# pragma omp parallel \
+    shared ( n, x, z ) \
+    private ( i, z0, z1 )
+
+# pragma omp for nowait
+
         for ( i = 0; i < 2 * n; i = i + 2 )
         {
-            z0 = 0.0;              /* real part of array */
-            z1 = 0.0;              /* imaginary part of array */
-            x[i] = z0;
-            z[i] = z0;           /* copy of initial real data */
-            x[i+1] = z1;
-            z[i+1] = z1;         /* copy of initial imag. data */
-            }
+          z0 = 0.0;              /* real part of array */
+          z1 = 0.0;              /* imaginary part of array */
+          x[i] = z0;
+          z[i] = z0;           /* copy of initial real data */
+          x[i+1] = z1;
+          z[i+1] = z1;         /* copy of initial imag. data */
         }
-        /* 
-        Initialize the sine and cosine tables.
-        */
-        cffti ( n, w );
-        /* 
-        Transform forward, back 
-        */
-        if ( first ) {
-            sgn = + 1.0;
-            cfft2 ( n, x, y, w, sgn );
-            sgn = - 1.0;
-            cfft2 ( n, y, x, w, sgn );
-            /* 
-            Results should be same as the initial data multiplied by N.
-            */
-            fnm1 = 1.0 / ( double ) n;
-            error = 0.0;
-            for ( i = 0; i < 2 * n; i = i + 2 )
-            {
-                error = error 
-                    + pow ( z[i]   - fnm1 * x[i], 2 )
-                    + pow ( z[i+1] - fnm1 * x[i+1], 2 );
-            }
-            error = sqrt ( fnm1 * error );
-            printf ( "  %12d  %8d  %12e", n, nits, error );
-            first = 0;
-        } else {
-            wtime = omp_get_wtime ( );
-            for ( it = 0; it < nits; it++ ) {
-                sgn = + 1.0;
-                cfft2 ( n, x, y, w, sgn );
-                sgn = - 1.0;
-                cfft2 ( n, y, x, w, sgn );
-            }
-
-            wtime = omp_get_wtime ( ) - wtime;
-            flops = 2.0 * ( double ) nits 
-            * ( 5.0 * ( double ) n * ( double ) ln2 );
-
-            mflops = flops / 1.0E+06 / wtime;
-            printf ( "  %12e  %12e  %12f\n", wtime, wtime / ( double ) ( 2 * nits ), mflops );
+      }
+/* 
+  Initialize the sine and cosine tables.
+*/
+      cffti ( n, w );
+/* 
+  Transform forward, back 
+*/
+      if ( first )
+      {
+        sgn = + 1.0;
+        cfft2 ( n, x, y, w, sgn );
+        sgn = - 1.0;
+        cfft2 ( n, y, x, w, sgn );
+/* 
+  Results should be same as the initial data multiplied by N.
+*/
+        fnm1 = 1.0 / ( double ) n;
+        error = 0.0;
+        for ( i = 0; i < 2 * n; i = i + 2 )
+        {
+          error = error 
+          + pow ( z[i]   - fnm1 * x[i], 2 )
+          + pow ( z[i+1] - fnm1 * x[i+1], 2 );
         }
+        error = sqrt ( fnm1 * error );
+        printf ( "  %12d  %8d  %12e", n, nits, error );
+        first = 0;
+      }
+      else
+      {
+        wtime = omp_get_wtime ( );
+        for ( it = 0; it < nits; it++ )
+        {
+          sgn = + 1.0;
+          cfft2 ( n, x, y, w, sgn );
+          sgn = - 1.0;
+          cfft2 ( n, y, x, w, sgn );
+        }
+        wtime = omp_get_wtime ( ) - wtime;
+
+        flops = 2.0 * ( double ) nits 
+          * ( 5.0 * ( double ) n * ( double ) ln2 );
+
+        mflops = flops / 1.0E+06 / wtime;
+
+        printf ( "  %12e  %12e  %12f\n", wtime, wtime / ( double ) ( 2 * nits ), mflops );
+      }
     }
     if ( ( ln2 % 4 ) == 0 ) 
     {
@@ -188,16 +227,42 @@ void ccopy ( int n, double x[], double y[] )
 /******************************************************************************/
 /*
   Purpose:
+
     CCOPY copies a complex vector.
+
   Discussion:
+
     The "complex" vector A[N] is actually stored as a double vector B[2*N].
+
     The "complex" vector entry A[I] is stored as:
+
       B[I*2+0], the real part,
       B[I*2+1], the imaginary part.
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
+
   Parameters:
-    - Input, int N, the length of the vector.
-    - Input, double X[2*N], the vector to be copied.
-    - Output, double Y[2*N], a copy of X.
+
+    Input, int N, the length of the vector.
+
+    Input, double X[2*N], the vector to be copied.
+
+    Output, double Y[2*N], a copy of X.
 */
 {
   int i;
@@ -212,17 +277,42 @@ void ccopy ( int n, double x[], double y[] )
 /******************************************************************************/
 
 void cfft2 ( int n, double x[], double y[], double w[], double sgn )
+
 /******************************************************************************/
 /*
-  CFFT2 performs a complex Fast Fourier Transform.
+  Purpose:
+
+    CFFT2 performs a complex Fast Fourier Transform.
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
 
   Parameters:
-    - Input, int N, the size of the array to be transformed.
-    - Input/output, double X[2*N], the data to be transformed.  
-    - On output, the contents of X have been overwritten by work information.
-    - Output, double Y[2*N], the forward or backward FFT of X.
-    - Input, double W[N], a table of sines and cosines.
-    - Input, double SGN, is +1 for a "forward" FFT and -1 for a "backward" FFT.
+
+    Input, int N, the size of the array to be transformed.
+
+    Input/output, double X[2*N], the data to be transformed.  
+    On output, the contents of X have been overwritten by work information.
+
+    Output, double Y[2*N], the forward or backward FFT of X.
+
+    Input, double W[N], a table of sines and cosines.
+
+    Input, double SGN, is +1 for a "forward" FFT and -1 for a "backward" FFT.
 */
 {
   int j;
@@ -257,9 +347,9 @@ void cfft2 ( int n, double x[], double y[], double w[], double sgn )
       tgle = 1;
     }
   }
-  /* 
-    Last pass through data: move Y to X if needed.
-  */
+/* 
+  Last pass through data: move Y to X if needed.
+*/
   if ( tgle ) 
   {
     ccopy ( n, y, x );
@@ -276,10 +366,32 @@ void cffti ( int n, double w[] )
 
 /******************************************************************************/
 /*
-  CFFTI sets up sine and cosine tables needed for the FFT calculation.
+  Purpose:
+
+    CFFTI sets up sine and cosine tables needed for the FFT calculation.
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
+
   Parameters:
-    - Input, int N, the size of the array to be transformed.
-    - Output, double W[N], a table of sines and cosines.
+
+    Input, int N, the size of the array to be transformed.
+
+    Output, double W[N], a table of sines and cosines.
 */
 {
   double arg;
@@ -312,10 +424,31 @@ double ggl ( double *seed )
 /******************************************************************************/
 /* 
   Purpose:
-    - GGL generates uniformly distributed pseudorandom real numbers in [0,1].
+
+    GGL generates uniformly distributed pseudorandom real numbers in [0,1]. 
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen, M Troyer, I Vattulainen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
+
   Parameters:
-    - Input/output, double *SEED, used as a seed for the sequence.
-    - Output, double GGL, the next pseudorandom value.
+
+    Input/output, double *SEED, used as a seed for the sequence.
+
+    Output, double GGL, the next pseudorandom value.
 */
 {
   double d2 = 0.2147483647e10;
@@ -336,8 +469,29 @@ void step ( int n, int mj, double a[], double b[], double c[],
 
 /******************************************************************************/
 /*
-  STEP carries out one step of the workspace version of CFFT2.
+  Purpose:
+
+    STEP carries out one step of the workspace version of CFFT2.
+
+  Modified:
+
+    20 March 2009
+
+  Author:
+
+    Original C version by Wesley Petersen.
+    This C version by John Burkardt.
+
+  Reference:
+
+    Wesley Petersen, Peter Arbenz, 
+    Introduction to Parallel Computing - A practical guide with examples in C,
+    Oxford University Press,
+    ISBN: 0-19-851576-6,
+    LC: QA76.58.P47.
+
   Parameters:
+
 */
 {
   double ambr;
@@ -392,12 +546,35 @@ void step ( int n, int mj, double a[], double b[], double c[],
   }
   return;
 }
+/******************************************************************************/
 
 void timestamp ( void )
+
 /******************************************************************************/
 /*
-  TIMESTAMP prints the current YMDHMS date as a time stamp.
+  Purpose:
+
+    TIMESTAMP prints the current YMDHMS date as a time stamp.
+
+  Example:
+
+    31 May 2001 09:45:54 AM
+
+  Licensing:
+
+    This code is distributed under the GNU LGPL license. 
+
+  Modified:
+
+    24 September 2003
+
+  Author:
+
+    John Burkardt
+
   Parameters:
+
+    None
 */
 {
 # define TIME_SIZE 40
