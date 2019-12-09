@@ -400,7 +400,7 @@ void timestamp ( void )
   Parameters:
 */
 {
-  # define TIME_SIZE 40
+# define TIME_SIZE 40
 
   static char time_buffer[TIME_SIZE];
   const struct tm *tm;
@@ -414,5 +414,5 @@ void timestamp ( void )
   printf ( "%s\n", time_buffer );
 
   return;
-  # undef TIME_SIZE
+# undef TIME_SIZE
 }
