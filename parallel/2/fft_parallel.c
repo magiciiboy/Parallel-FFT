@@ -577,9 +577,7 @@ void timestamp ( void )
     None
 */
 {
-# define TIME_SIZE 40
-
-  static char time_buffer[TIME_SIZE];
+  static char time_buffer[40];
   const struct tm *tm;
   time_t now;
 
@@ -591,5 +589,4 @@ void timestamp ( void )
   printf ( "%s\n", time_buffer );
 
   return;
-# undef TIME_SIZE
 }
