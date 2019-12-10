@@ -210,8 +210,8 @@ void cfft2 ( int n, double x[], double y[], double w[], double sgn )
   CFFT2 performs a complex Fast Fourier Transform.
   Parameters:
     - Input, int N, the size of the array to be transformed.
-    - Input/output, double X[2*N], the data to be transformed.  
-    - On output, the contents of X have been overwritten by work information.
+    - Input/output, double X[2*N], the data to be transformed. 
+      On output, the contents of X have been overwritten by work information.
     - Output, double Y[2*N], the forward or backward FFT of X.
     - Input, double W[N], a table of sines and cosines.
     - Input, double SGN, is +1 for a "forward" FFT and -1 for a "backward" FFT.
@@ -268,6 +268,7 @@ void cffti ( int n, double w[] )
 
 /******************************************************************************/
 /*
+  CFFTI sets up sine and cosine tables needed for the FFT calculation.
   Parameters:
     - Input, int N, the size of the array to be transformed.
     - Output, double W[N], a table of sines and cosines.

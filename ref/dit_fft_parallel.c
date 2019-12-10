@@ -16,20 +16,25 @@ static complex double *FFT_recurse( complex double *x, int N, int skip ) {
     E = FFT_recurse( x, N/2, skip * 2 );
     O = FFT_recurse( x + skip, N/2, skip * 2 );
 
-    for ( int k = 0; k < N / 2; k++ ) {
-        O[k] = ( cexp( 2.0 * I * M_PI * k / N ) * O[k] );
-    }
-    
-    // While E[k] and O[k] are of length N/2, and X[k] is of length N, E[k] and
-    // O[k] are periodic in k with length N/2.
-    for ( int k = 0; k < N / 2; k++ ) {
-        X[k] = E[k] + O[k];
-        X[k + N/2] = E[k] - O[k];
+    #pragma omp parallel shared(X, E, O, N) private(k) {
+        // Multiply operation with Wk
+        #pragma omp for nowait
+        for ( int k = 0; k < N / 2; k++ ) {
+            O[k] = ( cexp( 2.0 * I * M_PI * k / N ) * O[k] );
+        }
+        
+        // Add operations
+        // While E[k] and O[k] are of length N/2, and X[k] is of length N, E[k] and
+        // O[k] are periodic in k with length N/2.
+        #pragma omp for nowait
+        for ( int k = 0; k < N / 2; k++ ) {
+            X[k] = E[k] + O[k];
+            X[k + N/2] = E[k] - O[k];
+        }
     }
     
     free( O );
     free( E );
-    
     return X;
 }
 
