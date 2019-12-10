@@ -76,7 +76,7 @@ int main ( )
   printf ( "\n" );
   printf ( "    FFT ( FFT ( X(1:N) ) ) == N * X(1:N)\n" );
   printf ( "\n" );
-  printf ( "             N      NITS    Error         Time          Time/Call     MFLOPS\n" );
+  printf ( "             N      NITS    Error         FLOPS               Time          Time/Call     MFLOPS\n" );
   printf ( "\n" );
 
   seed  = 331.0;
