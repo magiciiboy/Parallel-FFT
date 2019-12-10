@@ -175,7 +175,7 @@ int main ( )
 
         mflops = flops / 1.0E+06 / wtime;
 
-        printf ( "  %20.0f  %12.5f  %12e  %12f\n", flops, ctime, ctime / ( double ) ( 2 * nits ), mflops );
+        printf ( "  %20.0f  %12.5f  %12e  %12f\n", flops, wtime, wtime / ( double ) ( 2 * nits ), mflops );
       }
     }
     if ( ( ln2 % 4 ) == 0 ) 
