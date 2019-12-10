@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <float.h>
 #include <time.h>
-#include "dit_fft.h"
+#include "dit_fft.c"
 
 #define TEST_EPSILON 0.000000001
 #define TEST_SIZE 1024
